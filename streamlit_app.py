@@ -5,7 +5,8 @@ Run locally:
     streamlit run streamlit_app.py
 
 Deploy on Streamlit Cloud:
-    Set ELEVENLABS_API_KEY in the app's Secrets manager.
+    Set ELEVENLABS_API_KEY in the app's Secrets manager,
+    or use the Google TTS engine which requires no API key.
 """
 
 import os
@@ -138,7 +139,7 @@ def _detect(text):
 
 
 @st.cache_data(show_spinner=False, ttl=600)
-def _synthesize(text, voice, api_key,
+def _synthesize(text, engine_type, voice, api_key,
                 speed, stability, style, rate, pitch, volume,
                 emotion, intensity):
     params = VoiceParameters(
@@ -154,11 +155,15 @@ def _synthesize(text, voice, api_key,
 
     ssml_markup = generate_ssml(text, params)
 
-    with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
+    suffix = ".mp3"
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
         tmp_path = tmp.name
 
     try:
-        engine = create_engine("elevenlabs", api_key=api_key, voice=voice)
+        if engine_type == "elevenlabs":
+            engine = create_engine("elevenlabs", api_key=api_key, voice=voice)
+        else:
+            engine = create_engine("gtts")
         engine.synthesize(text, params, tmp_path)
         audio_bytes = Path(tmp_path).read_bytes()
     finally:
@@ -166,13 +171,14 @@ def _synthesize(text, voice, api_key,
             Path(tmp_path).unlink()
 
     params_dict = {
-        "Speed":     f"{params.el_speed:.2f}×",
-        "Stability": f"{params.el_stability:.2f}",
-        "Style":     f"{params.el_style:.2f}",
-        "Rate":      f"{params.rate} wpm",
-        "Pitch":     f"{params.pitch_semitones:+.1f} st",
-        "Volume":    f"{params.volume:.0%}",
+        "Speed":  f"{params.el_speed:.2f}×",
+        "Rate":   f"{params.rate} wpm",
+        "Pitch":  f"{params.pitch_semitones:+.1f} st",
+        "Volume": f"{params.volume:.0%}",
     }
+    if engine_type == "elevenlabs":
+        params_dict["Stability"] = f"{params.el_stability:.2f}"
+        params_dict["Style"]     = f"{params.el_style:.2f}"
 
     return audio_bytes, params_dict, ssml_markup
 
@@ -186,15 +192,31 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ── API key ───────────────────────────────────────────────────────────────────
+# ── Engine selector ───────────────────────────────────────────────────────────
 
-api_key = _resolve_api_key()
-if not api_key:
-    api_key = st.text_input(
-        "ElevenLabs API Key",
-        type="password",
-        placeholder="sk_… (or set ELEVENLABS_API_KEY as an env var / Streamlit secret)",
-    ).strip()
+st.markdown('<p class="section-label">TTS Engine</p>', unsafe_allow_html=True)
+engine_choice = st.radio(
+    "Engine",
+    options=["ElevenLabs — Premium voices", "Google TTS — Free, no API key"],
+    index=0,
+    horizontal=True,
+    label_visibility="collapsed",
+)
+use_elevenlabs = engine_choice.startswith("ElevenLabs")
+
+# ── API key (only for ElevenLabs) ─────────────────────────────────────────────
+
+api_key = ""
+if use_elevenlabs:
+    api_key = _resolve_api_key()
+    if not api_key:
+        api_key = st.text_input(
+            "ElevenLabs API Key",
+            type="password",
+            placeholder="sk_… (or set ELEVENLABS_API_KEY as an env var / Streamlit secret)",
+        ).strip()
+else:
+    st.info("Google TTS requires no API key and works everywhere.", icon="ℹ️")
 
 # ── Text input ────────────────────────────────────────────────────────────────
 
@@ -207,32 +229,34 @@ text = st.text_area(
     label_visibility="collapsed",
 )
 
-# ── Voice selector ────────────────────────────────────────────────────────────
+# ── Voice selector (ElevenLabs only) ─────────────────────────────────────────
 
-st.markdown('<p class="section-label" style="margin-top:0.8rem">Voice</p>', unsafe_allow_html=True)
+voice_name = "Sarah"
+if use_elevenlabs:
+    st.markdown('<p class="section-label" style="margin-top:0.8rem">Voice</p>', unsafe_allow_html=True)
 
-voices = list(ELEVENLABS_VOICES.keys())
-voice_labels = [f"{v}  —  {_VOICE_DESCRIPTIONS.get(v, '')}" for v in voices]
-label_to_voice = dict(zip(voice_labels, voices))
+    voices = list(ELEVENLABS_VOICES.keys())
+    voice_labels = [f"{v}  —  {_VOICE_DESCRIPTIONS.get(v, '')}" for v in voices]
+    label_to_voice = dict(zip(voice_labels, voices))
 
-selected_label = st.selectbox(
-    "Choose voice",
-    options=voice_labels,
-    index=0,
-    label_visibility="collapsed",
-)
-voice_name = label_to_voice[selected_label]
+    selected_label = st.selectbox(
+        "Choose voice",
+        options=voice_labels,
+        index=0,
+        label_visibility="collapsed",
+    )
+    voice_name = label_to_voice[selected_label]
 
-desc = _VOICE_DESCRIPTIONS.get(voice_name, "")
-st.markdown(
-    f"""<div class="voice-card selected"
-            style="border-color:#6366f1;background:#1a1a3e;
-                   max-width:260px;margin:0.3rem 0 0.6rem 0;">
-        <div class="voice-name">{voice_name}</div>
-        <div class="voice-desc">{desc}</div>
-    </div>""",
-    unsafe_allow_html=True,
-)
+    desc = _VOICE_DESCRIPTIONS.get(voice_name, "")
+    st.markdown(
+        f"""<div class="voice-card selected"
+                style="border-color:#6366f1;background:#1a1a3e;
+                       max-width:260px;margin:0.3rem 0 0.6rem 0;">
+            <div class="voice-name">{voice_name}</div>
+            <div class="voice-desc">{desc}</div>
+        </div>""",
+        unsafe_allow_html=True,
+    )
 
 # ── Advanced Controls ─────────────────────────────────────────────────────────
 
@@ -281,12 +305,11 @@ with st.expander("⚙️ Override voice parameters & edit SSML"):
                     el_speed=1.0, el_stability=0.6, el_style=0.2,
                     emotion="neutral", intensity=0.5,
                 )
-
         default_ssml = generate_ssml(text.strip(), preview_params)
     else:
         default_ssml = '<?xml version="1.0" encoding="UTF-8"?>\n<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis">\n  <!-- enter text above to preview SSML -->\n</speak>'
 
-    edited_ssml = st.text_area(
+    st.text_area(
         "SSML",
         value=default_ssml,
         height=220,
@@ -310,8 +333,8 @@ if speak_btn:
     if not text.strip():
         st.warning("Please enter some text first.")
         st.stop()
-    if not api_key:
-        st.error("ElevenLabs API key required. Enter it above or set ELEVENLABS_API_KEY.")
+    if use_elevenlabs and not api_key:
+        st.error("ElevenLabs API key required. Enter it above or switch to Google TTS.")
         st.stop()
 
     with st.spinner("Detecting emotion and generating speech…"):
@@ -333,8 +356,11 @@ if speak_btn:
                 final_pitch     = auto_params.pitch_semitones
                 final_volume    = auto_params.volume
 
+            engine_type = "elevenlabs" if use_elevenlabs else "gtts"
+
             audio_bytes, params, ssml_markup = _synthesize(
                 text=text.strip(),
+                engine_type=engine_type,
                 voice=voice_name,
                 api_key=api_key,
                 speed=final_speed,
@@ -397,7 +423,7 @@ if speak_btn:
             "prosody rate/pitch/volume, sentence breaks scaled to intensity, "
             "and emphasis on key words."
         )
-        final_ssml = st.text_area(
+        st.text_area(
             "Generated SSML",
             value=ssml_markup,
             height=220,
@@ -427,5 +453,5 @@ st.divider()
 st.caption(
     "Empathy Engine · "
     "emotion via [VADER](https://github.com/cjhutto/vaderSentiment) · "
-    "speech via [ElevenLabs](https://elevenlabs.io)"
+    "speech via [ElevenLabs](https://elevenlabs.io) / [Google TTS](https://gtts.readthedocs.io)"
 )
