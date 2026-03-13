@@ -30,9 +30,7 @@ from pathlib import Path
 from app.mapper import VoiceParameters
 
 
-# ---------------------------------------------------------------------------
 # Helpers (pydub-dependent — imported lazily to avoid Python 3.13 breakage)
-# ---------------------------------------------------------------------------
 
 def _get_audio_segment():
     """Lazy import of pydub.AudioSegment with a helpful error message."""
@@ -77,9 +75,7 @@ def _apply_post_processing(audio, params: VoiceParameters):
     return audio
 
 
-# ---------------------------------------------------------------------------
 # Abstract base
-# ---------------------------------------------------------------------------
 
 class BaseTTSEngine(ABC):
     """Common interface for all TTS backends."""
@@ -97,9 +93,7 @@ class BaseTTSEngine(ABC):
         """
 
 
-# ---------------------------------------------------------------------------
 # ElevenLabs backend
-# ---------------------------------------------------------------------------
 
 # ElevenLabs premade voices available on all plan tiers.
 ELEVENLABS_VOICES: dict[str, str] = {
@@ -186,9 +180,7 @@ class ElevenLabsEngine(BaseTTSEngine):
         return str(out)
 
 
-# ---------------------------------------------------------------------------
 # pyttsx3 backend
-# ---------------------------------------------------------------------------
 
 class Pyttsx3Engine(BaseTTSEngine):
     """Offline TTS via pyttsx3 with pydub pitch post-processing."""
@@ -229,9 +221,7 @@ class Pyttsx3Engine(BaseTTSEngine):
         return str(out)
 
 
-# ---------------------------------------------------------------------------
 # gTTS backend
-# ---------------------------------------------------------------------------
 
 class GTTSEngine(BaseTTSEngine):
     """Online TTS via Google Text-to-Speech with pydub post-processing."""
@@ -280,9 +270,7 @@ class GTTSEngine(BaseTTSEngine):
         return sped.set_frame_rate(audio.frame_rate)
 
 
-# ---------------------------------------------------------------------------
 # Factory
-# ---------------------------------------------------------------------------
 
 _ENGINES = {
     "elevenlabs": ElevenLabsEngine,

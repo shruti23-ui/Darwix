@@ -21,8 +21,8 @@ _SURPRISE_PATTERNS: List[str] = [
 
 _CURIOSITY_PATTERNS: List[str] = [
     r"\bwonder\b", r"\bcurious\b", r"\bfascinating\b", r"\bintriguing\b",
-    r"\binteresting\b", r"\bi wonder\b", r"\bhow does\b", r"\bwhat if\b",
-    r"\bwhy does\b", r"\btell me more\b", r"\bexplain\b",
+    r"\bi wonder\b", r"\bhow does\b", r"\bwhat if\b",
+    r"\bwhy does\b", r"\btell me more\b",
 ]
 
 _CONCERN_PATTERNS: List[str] = [
@@ -75,7 +75,7 @@ class EmotionDetector:
             intensity = min(1.0, 0.55 + abs(compound) * 0.45)
             return EmotionResult("surprise", intensity, scores)
 
-        if self._matches(lower, _CURIOSITY_PATTERNS):
+        if self._matches(lower, _CURIOSITY_PATTERNS) and compound > -0.3:
             intensity = min(1.0, 0.45 + abs(compound) * 0.35)
             return EmotionResult("curiosity", intensity, scores)
 

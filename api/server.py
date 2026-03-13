@@ -27,9 +27,7 @@ from app.emotion import EmotionDetector
 from app.mapper import VoiceMapper
 from app.tts_engine import create_engine
 
-# ---------------------------------------------------------------------------
 # App setup
-# ---------------------------------------------------------------------------
 
 app = FastAPI(
     title="Empathy Engine",
@@ -43,9 +41,7 @@ _OUTPUTS_DIR.mkdir(exist_ok=True)
 _detector = EmotionDetector()
 _mapper = VoiceMapper()
 
-# ---------------------------------------------------------------------------
 # Request / response models
-# ---------------------------------------------------------------------------
 
 
 class SpeakRequest(BaseModel):
@@ -67,9 +63,7 @@ class SpeakMetadata(BaseModel):
     audio_url: str
 
 
-# ---------------------------------------------------------------------------
 # Endpoints
-# ---------------------------------------------------------------------------
 
 
 @app.get("/health", tags=["ops"])

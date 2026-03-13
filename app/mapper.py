@@ -24,7 +24,7 @@ class VoiceParameters:
         pitch_semitones:  Semitone shift relative to the engine's default pitch.
 
     ElevenLabs fields:
-        el_speed:         Playback speed multiplier, 0.7–1.3 (1.0 = default).
+        el_speed:         Playback speed multiplier, 0.7–1.2 (1.0 = default).
         el_stability:     Voice consistency 0.0 (expressive) – 1.0 (monotone).
         el_style:         Style exaggeration 0.0–1.0.
 
@@ -134,7 +134,7 @@ class VoiceMapper:
         # ElevenLabs: stability and style are absolute targets interpolated
         # from neutral baseline toward the emotion's target value.
         el_speed = round(
-            max(0.7, min(1.3, _EL_BASE_SPEED + profile["el_speed_delta"] * i)), 3
+            max(0.7, min(1.2, _EL_BASE_SPEED + profile["el_speed_delta"] * i)), 3
         )
         el_stability = round(
             _EL_BASE_STABILITY + (profile["el_stability"] - _EL_BASE_STABILITY) * i, 3
