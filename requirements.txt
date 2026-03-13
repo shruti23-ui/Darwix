@@ -8,6 +8,7 @@ pyttsx3>=2.90
 
 # Audio post-processing
 pydub>=0.25.1
+pyaudioop>=0.2.0  # audioop backport for Python 3.13+
 
 # Web interface
 streamlit>=1.35.0
