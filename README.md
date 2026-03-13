@@ -4,6 +4,10 @@
 > tone of the input text — moving beyond monotonic TTS delivery to achieve
 > genuine emotional resonance.
 
+![Screenshot 1](image%20(1).png)
+![Screenshot 2](image%20(2).png)
+![Screenshot 3](image%20(3).png)
+
 ---
 
 ## Assignment Checklist
