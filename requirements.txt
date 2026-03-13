@@ -4,11 +4,10 @@ vaderSentiment>=3.3.2
 # TTS backends
 elevenlabs>=1.9.0
 gTTS>=2.5.0
-pyttsx3>=2.90
 
 # Audio post-processing
 pydub>=0.25.1
-pyaudioop>=0.2.0  # audioop backport for Python 3.13+
+audioop-lts>=0.2.1  # audioop backport for Python 3.13+
 
 # Web interface
 streamlit>=1.35.0
