@@ -224,4 +224,4 @@ Concern   : "I'm really worried about the test results."
 
 ## License
 
-MIT
+This project is licensed under the [MIT License](LICENSE) — free to use, modify, and distribute for any purpose, public or commercial, with attribution.
