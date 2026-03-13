@@ -1,0 +1,24 @@
+# Secrets — never commit these
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+
+# Generated audio
+outputs/*.wav
+outputs/*.mp3
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,22 @@
+# Core NLP
+vaderSentiment>=3.3.2
+
+# TTS backends
+elevenlabs>=1.9.0
+gTTS>=2.5.0
+pyttsx3>=2.90
+
+# Audio post-processing
+pydub>=0.25.1
+
+# Web interface
+streamlit>=1.35.0
+
+# REST API (optional, for api/server.py)
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.6.0
+
+# Note: pydub requires ffmpeg for MP3 encode/decode.
+# WAV output works without ffmpeg.
+# ElevenLabs returns MP3 natively so no ffmpeg needed for that backend.
