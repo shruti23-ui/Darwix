@@ -5,9 +5,8 @@ vaderSentiment>=3.3.2
 elevenlabs>=1.9.0
 gTTS>=2.5.0
 
-# Audio post-processing
+# Audio post-processing (only needed for pyttsx3 backend, not used on Streamlit Cloud)
 pydub>=0.25.1
-audioop-lts>=0.2.1  # audioop backport for Python 3.13+
 
 # Web interface
 streamlit>=1.35.0
@@ -16,7 +15,3 @@ streamlit>=1.35.0
 fastapi>=0.111.0
 uvicorn[standard]>=0.29.0
 pydantic>=2.6.0
-
-# Note: pydub requires ffmpeg for MP3 encode/decode.
-# WAV output works without ffmpeg.
-# ElevenLabs returns MP3 natively so no ffmpeg needed for that backend.

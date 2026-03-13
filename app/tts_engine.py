@@ -224,7 +224,7 @@ class Pyttsx3Engine(BaseTTSEngine):
 # gTTS backend
 
 class GTTSEngine(BaseTTSEngine):
-    """Online TTS via Google Text-to-Speech with pydub post-processing."""
+    """Online TTS via Google Text-to-Speech — no ffmpeg or pydub required."""
 
     def __init__(self, lang: str = "en", tld: str = "com") -> None:
         self._lang = lang
@@ -237,37 +237,11 @@ class GTTSEngine(BaseTTSEngine):
         output_path: str,
     ) -> str:
         from gtts import gTTS
-        AudioSegment = _get_audio_segment()
 
         out = Path(output_path)
         _ensure_dir(out)
-
-        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
-            tmp_path = tmp.name
-
-        try:
-            gTTS(text=text, lang=self._lang, tld=self._tld).save(tmp_path)
-            audio = AudioSegment.from_mp3(tmp_path)
-            audio = self._apply_rate(audio, params.rate)
-            audio = _apply_post_processing(audio, params)
-            fmt = out.suffix.lstrip(".") or "mp3"
-            audio.export(str(out), format=fmt)
-        finally:
-            if os.path.exists(tmp_path):
-                os.unlink(tmp_path)
-
+        gTTS(text=text, lang=self._lang, tld=self._tld).save(str(out))
         return str(out)
-
-    @staticmethod
-    def _apply_rate(audio, target_rate: int, base_rate: int = 185):
-        ratio = target_rate / base_rate
-        if abs(ratio - 1.0) < 0.03:
-            return audio
-        sped = audio._spawn(
-            audio.raw_data,
-            overrides={"frame_rate": int(audio.frame_rate * ratio)},
-        )
-        return sped.set_frame_rate(audio.frame_rate)
 
 
 # Factory
